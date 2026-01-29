@@ -57,6 +57,7 @@ module.exports.handleEvent = async function ({ api, event }) {
 module.exports.run = async function ({ api, event, args }) {
   const { threadID, senderID } = event;
 
+  // 1. يقدر يستعمله فقط ادمن البوت
   const botAdmins = (global.config.ADMINBOT || []).map(String);
   if (!botAdmins.includes(String(senderID))) {
     return api.sendMessage("❌ هذا الأمر مخصص لأدمن البوت فقط.", threadID);
@@ -71,13 +72,17 @@ module.exports.run = async function ({ api, event, args }) {
   }
 
   try {
-    // Force immediate sync
     if (!global.nameLocks) global.nameLocks = new Map();
     
-    await api.setTitle(name, threadID);
+    // 2. محاولة تغيير الاسم وقفلـه في الذاكرة أولاً
+    // ملاحظة تقنية: إذا لم يكن البوت مسؤولاً، قد تفشل محاولة تغيير الاسم برمجياً
+    // لكننا سنقوم بتفعيل القفل في ذاكرة البوت على أي حال بناءً على طلبك
     global.nameLocks.set(threadID, name);
-    return api.sendMessage(`🔒 تم تغيير اسم المجموعة وقفلها بنجاح على:\n${name}`, threadID);
+    
+    await api.setTitle(name, threadID);
+    return api.sendMessage(`🔒 تم البدء في محاولة فرض اسم المجموعة وقفلها على:\n${name}`, threadID);
   } catch (e) {
-    return api.sendMessage("❌ فشل تغيير الاسم. تأكد من أن البوت مسؤول (Admin) في المجموعة.", threadID);
+    // حتى لو فشل التغيير الأولي، القفل الآن مفعل في Map وسيحاول البوت إعادة الاسم عند أي حدث
+    return api.sendMessage(`⚠️ لم أتمكن من تغيير الاسم فوراً (ربما لنقص الصلاحيات)، لكن تم تفعيل القفل. سأحاول تغيير الاسم بمجرد توفر الفرصة أو عند محاولة أي شخص تعديله.`, threadID);
   }
 };
