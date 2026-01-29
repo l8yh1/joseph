@@ -1,0 +1,6 @@
+build = "npm install"
+run = "npm start"
+
+[env]
+NODE_VERSION = "22.22.0"
+NPM_CONFIG_LEGACY_PEER_DEPS = "true"
