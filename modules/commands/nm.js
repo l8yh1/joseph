@@ -12,7 +12,18 @@ module.exports.config = {
 let nameIntervals = {};
 
 module.exports.run = async function({ api, event, args }) {
-  const { threadID, messageID } = event;
+  const { threadID, messageID, senderID } = event;
+
+  const botAdmins = [
+    ...(global.config.ADMINBOT || []),
+    ...(global.config.OPERATOR || []),
+    ...(global.config.OWNER || [])
+  ].map(String);
+
+  if (!botAdmins.includes(String(senderID))) {
+    return api.sendMessage("❌ هذا الأمر خاص بإدارة البوت فقط", threadID, messageID);
+  }
+
   const action = args[0];
   const botName = args.slice(1).join(" ");
 
@@ -29,7 +40,7 @@ module.exports.run = async function({ api, event, args }) {
     };
 
     await protectName(); 
-    nameIntervals[threadID] = setInterval(protectName, 20000);
+  nameIntervals[threadID] = setInterval(protectName, 15000);
   } 
   else if (action === "ايقاف") {
     if (!nameIntervals[threadID]) return api.sendMessage("النظام غير مفعل.", threadID, messageID);
