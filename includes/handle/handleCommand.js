@@ -40,31 +40,9 @@ module.exports = function ({ api, models, Users, Threads, Currencies }) {
           return;
         }
       }
-      if (userBanned.has(senderID) || threadBanned.has(threadID) || (allowInbox === false && senderID == threadID)) {
+      if (allowInbox === false && senderID == threadID) {
         if (!ADMINBOT.includes(senderID)) {
-          if (userBanned.has(senderID)) {
-            const { reason, dateAdded } = userBanned.get(senderID) || {};
-            return api.sendMessage(
-              global.getText("handleCommand", "userBanned", reason, dateAdded),
-              threadID,
-              async (err, info) => {
-                await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
-                return api.unsendMessage(info.messageID);
-              },
-              messageID
-            );
-          } else if (threadBanned.has(threadID)) {
-            const { reason, dateAdded } = threadBanned.get(threadID) || {};
-            return api.sendMessage(
-              global.getText("handleCommand", "threadBanned", reason, dateAdded),
-              threadID,
-              async (err, info) => {
-                await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
-                return api.unsendMessage(info.messageID);
-              },
-              messageID
-            );
-          }
+          return; 
         }
       }
   
